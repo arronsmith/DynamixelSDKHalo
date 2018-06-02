@@ -64,17 +64,19 @@ const char *getTxRxResult(int protocol_version, int result)
     return getTxRxResult2(result);
   }
 }
-void printTxRxResult(int protocol_version, int result)
+/*void printTxRxResult(int protocol_version, int result)
 {
   if (protocol_version == 1)
   {
-    printTxRxResult1(result);
+    
+	  Result1(result);
   }
   else
   {
     printTxRxResult2(result);
   }
-}
+}*/
+
 const char *getRxPacketError(int protocol_version, uint8_t error)
 {
   if (protocol_version == 1)
@@ -86,7 +88,7 @@ const char *getRxPacketError(int protocol_version, uint8_t error)
     return getRxPacketError2(error);
   }
 }
-void printRxPacketError(int protocol_version, uint8_t error)
+/*void printRxPacketError(int protocol_version, uint8_t error)
 {
   if (protocol_version == 1)
   {
@@ -96,7 +98,7 @@ void printRxPacketError(int protocol_version, uint8_t error)
   {
     printRxPacketError2(error);
   }
-}
+}*/
 
 int getLastTxRxResult(int port_num, int protocol_version)
 {
