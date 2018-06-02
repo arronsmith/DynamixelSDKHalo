@@ -47,7 +47,7 @@ typedef struct
   double  tx_time_per_byte;
 }PortData;
 
-static PortData *portData;
+PortData *portData;
 
 int portHandlerWindows(const char *port_name)
 {
@@ -60,38 +60,15 @@ int portHandlerWindows(const char *port_name)
   {
     port_num = 0;
     g_used_port_num = 1;
-    portData = (PortData*)calloc(1, sizeof(PortData));
-    g_is_using = (uint8_t*)calloc(1, sizeof(uint8_t));
+    portData = (PortData*)calloc(10, sizeof(PortData));
+    g_is_using = (uint8_t*)calloc(10, sizeof(uint8_t));
   }
   else
   {
-    for (port_num = 0; port_num < g_used_port_num; port_num++)
-    {
-      if (!strcmp(portData[port_num].port_name, buffer))
-        break;
-    }
-
-    if (port_num == g_used_port_num)
-    {
-      for (port_num = 0; port_num < g_used_port_num; port_num++)
-      {
-        if (portData[port_num].serial_handle != INVALID_HANDLE_VALUE)
-          break;
-      }
-
-      if (port_num == g_used_port_num)
-      {
-        g_used_port_num++;
-        portData = (PortData*)realloc(portData, g_used_port_num * sizeof(PortData));
-        g_is_using = (uint8_t*)realloc(g_is_using, g_used_port_num * sizeof(uint8_t));
-      }
-    }
-    else
-    {
-      printf("[PortHandler setup] The port number %d has same device name... reinitialize port number %d!!\n", port_num, port_num);
-    }
-  }
-
+	g_used_port_num++;  
+   }
+  port_num = g_used_port_num - 1;
+    
   portData[port_num].serial_handle = INVALID_HANDLE_VALUE;
   portData[port_num].baudrate = DEFAULT_BAUDRATE;
   portData[port_num].packet_start_time = 0.0;
@@ -102,12 +79,15 @@ int portHandlerWindows(const char *port_name)
 
   setPortNameWindows(port_num, buffer);
 
+  printf("Allocated port %s at index %d\n", buffer, port_num);
+
   return port_num;
 }
 
 uint8_t openPortWindows(int port_num)
-{
-  return setBaudRateWindows(port_num, portData[port_num].baudrate);
+{ 
+
+	return setBaudRateWindows(port_num, portData[port_num].baudrate);
 }
 
 void closePortWindows(int port_num)
@@ -214,6 +194,7 @@ uint8_t setupPortWindows(int port_num, const int baudrate)
   DWORD dwError;
 
   closePortWindows(port_num);
+  printf("DXL: Opening port %s, index %d \n", portData[port_num].port_name, port_num);
 
   portData[port_num].serial_handle = CreateFileA(portData[port_num].port_name, GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
   if (portData[port_num].serial_handle == INVALID_HANDLE_VALUE)
@@ -221,6 +202,8 @@ uint8_t setupPortWindows(int port_num, const int baudrate)
     printf("[PortHandlerWindows::SetupPort] Error opening serial port!\n");
     return False;
   }
+
+  printf("DXL: Opened port %s, index %d \n", portData[port_num].port_name, port_num);
 
   dcb.DCBlength = sizeof(DCB);
   if (GetCommState(portData[port_num].serial_handle, &dcb) == FALSE)
@@ -273,7 +256,8 @@ uint8_t setupPortWindows(int port_num, const int baudrate)
   portData[port_num].tx_time_per_byte = (1000.0 / (double)portData[port_num].baudrate) * 10.0;
   return True;
 
-  DXL_HAL_OPEN_ERROR:
+DXL_HAL_OPEN_ERROR:
+  printf("DXL: HAL open error.\n");
     closePortWindows(port_num);
 
   return False;
